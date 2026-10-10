@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ModelChecker.Core/ModelChecker.Core.csproj" />
+  <Project Path="ModelChecker.Report/ModelChecker.Report.csproj" />
+  <Project Path="ModelChecker.Tests/ModelChecker.Tests.csproj" />
+  <Project Path="ModelChecker.Web/ModelChecker.Web.csproj" />
+</Solution>
