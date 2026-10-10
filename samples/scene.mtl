@@ -1,0 +1,55 @@
+# MTL file - created by a modified js OBJExporter
+
+newmtl pasted__buttonsmat1
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pm 0.5992759146341463
+Pr 0.3797637195121951
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.022903998576993965 0.01455110372071005 0.01455110372071005
+Ke 0 0 0
+
+newmtl pasted__sofalegsShape_bakedmtl2
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.812690548780488
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.027606939338488443 0.007436948095088333 0.007436948095088333
+Ke 0 0 0
+map_Pm metalnessMap2.png
+map_Pr metalnessMap2.png
+map_Ka metalnessMap2.png
+
+newmtl pasted__coopermat1
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pm 0.7212271341463415
+Pr 0.1480564024390244
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.1347365746164536 0.05048554897339732 0.008919241556534363
+Ke 0 0 0
+
+newmtl pasted__sofabody2Shape_bakedmtl2
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pm 0.3858612804878049
+Pr 0.48951981707317077
+Pds 1
+Pl 1
+Ka 0.4712271341463415 0.4712271341463415 0.4712271341463415
+Kd 1 1 1
+Ke 0 0 0
+map_Kd pasted__sofabody2Shape_bakedmtl2.png
+map_Pm metalnessMap4.png
+map_Pr metalnessMap4.png
+map_Ka metalnessMap4.png
