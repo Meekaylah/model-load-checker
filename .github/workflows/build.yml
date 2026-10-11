@@ -1,0 +1,58 @@
+# Continuous integration: every push and pull request is built and tested on a
+# clean machine, so "it works on my Mac" is checked by something other than my Mac.
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code.
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # Install the same .NET version the projects target (net10.0).
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # Download the NuGet packages (xUnit, bUnit, ...).
+      - name: Restore packages
+        run: dotnet restore ModelChecker.slnx
+
+      - name: Build
+        run: dotnet build ModelChecker.slnx --configuration Release --no-restore
+
+      # Run the tests and save the results as a TRX file (XML) for the next step.
+      - name: Test
+        run: >
+          dotnet test ModelChecker.slnx
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory TestResults
+
+      # Turn the TRX file into a readable text report with our own tool.
+      # "if: always()" means: run this even when the Test step failed. That is
+      # exactly when the report is most useful. (By default a failed step skips
+      # everything after it.)
+      # The tool exits with code 1 if any test failed, so this step fails too.
+      - name: Write test report
+        if: always()
+        run: >
+          dotnet run --project ModelChecker.Report --configuration Release --no-build
+          -- TestResults/test-results.trx test-report.txt
+
+      # Attach the report to the workflow run so it can be downloaded from GitHub.
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.txt

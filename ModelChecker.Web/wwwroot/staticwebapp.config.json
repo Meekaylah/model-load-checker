@@ -1,0 +1,16 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/_framework/*",
+      "/css/*",
+      "/lib/*",
+      "/samples/*",
+      "*.{css,js,json,png,ico,wasm}"
+    ]
+  },
+  "mimeTypes": {
+    ".obj": "text/plain",
+    ".mtl": "text/plain"
+  }
+}
