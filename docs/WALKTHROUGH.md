@@ -328,4 +328,4 @@ Boundaries are where off-by-one bugs live. Those three values pin down exactly w
 No. They are stated assumptions. Real limits depend on the device, textures and the app. They are in one file so they can be changed.
 
 **What would you improve?**
-Large files are slow in the browser (about 17 seconds for the 21 MB sample, against 0.3 seconds natively) and the page doesn't respond while checking. Options are compiling the app ahead of time (AOT), or moving the parsing off the main thread. The app also only judges triangle count, not textures or memory.
+The page doesn't respond while a file is being checked. For the 21 MB sample that is under 2 seconds in the published build, but about 17 seconds under `dotnet run`, so it is worth measuring the published build before optimising anything. Moving the parsing off the main thread would keep the page responsive. The app also only judges triangle count, not textures or memory.

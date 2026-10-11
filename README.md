@@ -128,7 +128,7 @@ The site is hosted on Azure Static Web Apps. [staticwebapp.config.json](ModelChe
 
 ## Known limitations
 
-- **Large files are slow in the browser.** The 21 MB sample scene takes about 17 seconds to load and check in Chrome on the Mac it was developed on, compared with about 0.3 seconds for the same parser running natively. .NET in the browser is interpreted, which is much slower for this kind of text processing. Small models are instant. The page does not respond while a large file is being checked.
+- **Large files are slow when running locally with `dotnet run`.** The 21 MB sample scene takes about 17 seconds to load and check under the development server, but under 2 seconds in the published build (`dotnet publish -c Release`), which is what gets deployed. Both were measured in Chrome on the Mac it was developed on. Small models are instant either way. The page does not respond while a file is being checked.
 - **Only `.obj` files are supported.** Other formats would need another class that implements `IModelParser`.
 - **Only triangle count is judged.** Textures, materials and memory are not considered.
 
