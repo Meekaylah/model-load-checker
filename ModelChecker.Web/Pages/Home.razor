@@ -1,7 +1,260 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+@* @inject asks dependency injection for a service that Program.cs registered.
+   The page never creates these itself.
+   (Core.ModelChecker, not just ModelChecker, because that word is also our namespace.) *@
+@inject Core.ModelChecker Checker
+@inject HttpClient Http
 
-<h1>Hello, world!</h1>
+<PageTitle>Model Load Checker</PageTitle>
 
-Welcome to your new app.
+<header class="intro">
+    <h1>Will your 3D model load on a phone?</h1>
+    <p class="intro__lead">
+        Upload a <code>.obj</code> file to count its triangles and see whether it fits
+        on a phone, a tablet and a desktop. The file is checked in your browser and is never uploaded anywhere.
+    </p>
+</header>
+
+<section class="picker" aria-label="Choose a model">
+    <div class="picker__upload">
+        <label for="model-file" class="picker__label">Choose a .obj file</label>
+
+        @* InputFile is Blazor's <input type="file">. OnChange runs when a file is picked. *@
+        <InputFile id="model-file" class="form-control" accept=".obj" OnChange="OnFileSelectedAsync" disabled="@IsBusy" />
+
+        <p class="picker__hint">Up to @Format.FileSize(MaxFileSizeBytes).</p>
+    </div>
+
+    <div class="picker__samples">
+        <p class="picker__label">Or try a sample</p>
+
+        <div class="picker__buttons">
+            @foreach (SampleModel sample in Samples)
+            {
+                <button type="button" class="btn btn-outline-primary" disabled="@IsBusy"
+                        @onclick="() => LoadSampleAsync(sample)">
+                    @sample.Label
+                </button>
+            }
+        </div>
+    </div>
+</section>
+
+@* aria-live tells screen readers to read out this area when it changes. *@
+<div aria-live="polite">
+
+    @if (statusMessage != null)
+    {
+        <p class="status" role="status">@statusMessage</p>
+    }
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+
+    @if (result != null)
+    {
+        <section class="results">
+            <h2>@fileName</h2>
+
+            <dl class="stats">
+                <div class="stats__item">
+                    <dt>File size</dt>
+                    <dd>@Format.FileSize(fileSize)</dd>
+                </div>
+                <div class="stats__item">
+                    <dt>Vertices</dt>
+                    <dd>@Format.Number(result.Model.VertexCount)</dd>
+                </div>
+                <div class="stats__item">
+                    <dt>Triangles</dt>
+                    <dd>@Format.Number(result.Model.TriangleCount)</dd>
+                </div>
+                <div class="stats__item">
+                    <dt>Size (width × height × depth)</dt>
+                    <dd>
+                        @Format.Dimension(result.Model.BoundingBox.Width) ×
+                        @Format.Dimension(result.Model.BoundingBox.Height) ×
+                        @Format.Dimension(result.Model.BoundingBox.Depth)
+                    </dd>
+                </div>
+            </dl>
+
+            <div class="cards">
+                @foreach (DeviceVerdict device in result.Devices)
+                {
+                    <DeviceCard Result="device" TriangleCount="result.Model.TriangleCount" />
+                }
+            </div>
+
+            @if (result.Model.Warnings.Count > 0)
+            {
+                <section class="warnings">
+                    <h3>Problems found in the file (@Format.Number(result.Model.Warnings.Count))</h3>
+
+                    <ul>
+                        @* Take(n) gives at most the first n items, so a badly damaged
+                           file can't fill the page with thousands of lines. *@
+                        @foreach (string warning in result.Model.Warnings.Take(MaxWarningsShown))
+                        {
+                            <li>@warning</li>
+                        }
+                    </ul>
+
+                    @if (result.Model.Warnings.Count > MaxWarningsShown)
+                    {
+                        <p class="warnings__more">
+                            …and @Format.Number(result.Model.Warnings.Count - MaxWarningsShown) more.
+                        </p>
+                    }
+                </section>
+            }
+            else if (result.Model.TriangleCount == 0)
+            {
+                <p class="warnings__more">No triangles were found in this file, so there is nothing to draw.</p>
+            }
+
+            <p class="footnote">
+                The triangle budgets are rough assumptions, not measurements. Real devices vary.
+            </p>
+        </section>
+    }
+</div>
+
+@code {
+    // Blazor's default upload limit is about 500 KB, far too small for 3D models
+    // (our own sample scene is 21 MB), so we raise it. There still has to be a limit,
+    // because the whole file is held in the browser's memory.
+    private const long MaxFileSizeBytes = 50 * 1024 * 1024;
+
+    private const int MaxWarningsShown = 20;
+
+    // The files behind the "Try a sample" buttons. They live in wwwroot/samples.
+    private static readonly SampleModel[] Samples =
+    {
+        new SampleModel("light-chair.obj", "Light chair"),
+        new SampleModel("scene.obj", "Heavy scene (21 MB)"),
+        new SampleModel("broken-lamp.obj", "Broken lamp"),
+        new SampleModel("empty.obj", "Empty file")
+    };
+
+    // ----- The page's state (like useState values in React) -----
+    // Blazor re-renders the page after each event handler finishes.
+
+    private CheckResult? result;      // null until a model has been checked
+    private string? fileName;
+    private long fileSize;
+    private string? errorMessage;     // null when there is nothing wrong
+    private string? statusMessage;    // "Loading..." / "Checking..." text; null when idle
+
+    // While we're working, the buttons and file input are switched off.
+    private bool IsBusy => statusMessage != null;
+
+    // Runs when the user picks a file.
+    private async Task OnFileSelectedAsync(InputFileChangeEventArgs e)
+    {
+        IBrowserFile file = e.File;
+
+        StartNewCheck($"Reading {file.Name}…");
+
+        try
+        {
+            // Check the easy things first so we can give a specific, friendly message.
+            if (!file.Name.EndsWith(".obj", StringComparison.OrdinalIgnoreCase))
+            {
+                errorMessage = $"\"{file.Name}\" is not a .obj file. Please choose a 3D model saved as .obj.";
+                return;
+            }
+
+            if (file.Size > MaxFileSizeBytes)
+            {
+                errorMessage = $"That file is {Format.FileSize(file.Size)}, which is over the {Format.FileSize(MaxFileSizeBytes)} limit. Try a smaller model.";
+                return;
+            }
+
+            // OpenReadStream needs the same raised limit, otherwise it throws at about 500 KB.
+            // "using" closes the stream when we're done with it.
+            using Stream stream = file.OpenReadStream(MaxFileSizeBytes);
+
+            // Read the whole file into memory in one go, then turn the bytes into text.
+            // (Reading it a little at a time with a StreamReader was about five times
+            // slower in the browser for a 21 MB file.)
+            byte[] bytes = new byte[file.Size];
+            await stream.ReadExactlyAsync(bytes);
+            string text = DecodeText(bytes);
+
+            await CheckAsync(file.Name, file.Size, text);
+        }
+        catch (Exception)
+        {
+            // Whatever went wrong, the user gets a plain sentence, not a crashed page.
+            errorMessage = "Sorry, that file could not be read. Please check it is a .obj text file and try again.";
+        }
+        finally
+        {
+            // "finally" always runs, so the page can never get stuck on "Reading…".
+            statusMessage = null;
+        }
+    }
+
+    // Runs when a "Try a sample" button is clicked.
+    private async Task LoadSampleAsync(SampleModel sample)
+    {
+        StartNewCheck($"Loading {sample.FileName}…");
+
+        try
+        {
+            // The samples are plain static files, so we fetch them like any other URL.
+            string text = await Http.GetStringAsync($"samples/{sample.FileName}");
+
+            // The sample files only contain plain English characters,
+            // so one character is one byte and the length is the file size.
+            await CheckAsync(sample.FileName, text.Length, text);
+        }
+        catch (Exception)
+        {
+            errorMessage = $"Sorry, the sample \"{sample.FileName}\" could not be loaded. Please check your connection and try again.";
+        }
+        finally
+        {
+            statusMessage = null;
+        }
+    }
+
+    // Turns the bytes of a file into a string.
+    private static string DecodeText(byte[] bytes)
+    {
+        string text = System.Text.Encoding.UTF8.GetString(bytes);
+
+        // Some Windows programs put an invisible marker (a "byte order mark") at the
+        // very start of a text file. Left in, it would glue itself onto the first
+        // word of line 1, so we remove it.
+        return text.TrimStart('\uFEFF');
+    }
+
+    // Clears the last result and shows a status message.
+    private void StartNewCheck(string message)
+    {
+        result = null;
+        errorMessage = null;
+        statusMessage = message;
+    }
+
+    // The one place the page talks to the Core project.
+    private async Task CheckAsync(string name, long size, string text)
+    {
+        statusMessage = $"Checking {name}… big files can take a few seconds.";
+
+        // Parsing a big file keeps the browser busy for a moment, and WebAssembly has
+        // only one thread. This tiny pause gives the browser a chance to draw the
+        // "Checking…" message first.
+        StateHasChanged();
+        await Task.Delay(1);
+
+        result = Checker.Check(text);
+        fileName = name;
+        fileSize = size;
+    }
+}

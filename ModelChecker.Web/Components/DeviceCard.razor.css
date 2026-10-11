@@ -1,0 +1,71 @@
+/* A file named X.razor.css is "scoped": these styles only apply to X.razor,
+   like a CSS module. */
+
+.device-card {
+    /* Each colour variant below only changes these three variables. */
+    --accent: #555;
+    --tint: #f5f5f5;
+    --ink: #222;
+
+    background: var(--tint);
+    border: 1px solid var(--accent);
+    border-top: 0.4rem solid var(--accent);
+    border-radius: 0.6rem;
+    padding: 1rem 1.1rem;
+    color: #222;
+}
+
+.device-card--ready {
+    --accent: #1a7f37;
+    --tint: #ebf7ee;
+    --ink: #14602a;
+}
+
+.device-card--too-heavy {
+    --accent: #d97706;
+    --tint: #fff4e2;
+    --ink: #8a4700;
+}
+
+.device-card--broken {
+    --accent: #c62828;
+    --tint: #fdecea;
+    --ink: #9b1c1c;
+}
+
+.device-card__name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.device-card__verdict {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0.15rem 0 0.4rem;
+}
+
+.device-card__detail {
+    margin: 0 0 0.75rem;
+}
+
+.device-card__bar {
+    height: 0.5rem;
+    background: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 1rem;
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+}
+
+.device-card__bar-fill {
+    height: 100%;
+    background: var(--accent);
+}
+
+.device-card__budget {
+    font-size: 0.85rem;
+    color: #555;
+    margin: 0;
+}

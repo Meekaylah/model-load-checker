@@ -1,0 +1,101 @@
+.intro h1 {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
+.intro__lead {
+    font-size: 1.1rem;
+    color: #444;
+    max-width: 42rem;
+}
+
+/* Upload on the left, samples on the right; they stack on a narrow screen. */
+.picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.5rem;
+    background: #f6f8fa;
+    border: 1px solid #d8dee4;
+    border-radius: 0.6rem;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+}
+
+.picker__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.picker__hint {
+    font-size: 0.85rem;
+    color: #555;
+    margin: 0.4rem 0 0;
+}
+
+.picker__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.status {
+    font-weight: 600;
+    color: #444;
+}
+
+.results h2 {
+    font-size: 1.4rem;
+    margin: 1.5rem 0 1rem;
+    overflow-wrap: anywhere;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats dt {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #555;
+}
+
+.stats dd {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.warnings h3 {
+    font-size: 1.1rem;
+}
+
+.warnings ul {
+    padding-left: 1.2rem;
+}
+
+.warnings li {
+    margin-bottom: 0.25rem;
+    overflow-wrap: anywhere;
+}
+
+.warnings__more {
+    color: #444;
+}
+
+.footnote {
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 1.5rem;
+}

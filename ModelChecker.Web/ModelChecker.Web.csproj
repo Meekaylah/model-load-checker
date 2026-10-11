@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+
+    <!-- .NET 10 downloads HTTP responses in small pieces ("streaming") by default.
+         We always want the whole sample file, and getting it in one piece is about
+         twice as fast for the 21 MB sample. -->
+    <WasmEnableStreamingResponse>false</WasmEnableStreamingResponse>
   </PropertyGroup>
 
   <ItemGroup>

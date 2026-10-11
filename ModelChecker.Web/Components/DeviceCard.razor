@@ -1,0 +1,63 @@
+@* One card answering "will it load on this device?".
+   It only displays a verdict that ModelChecker (in Core) already worked out.
+   There are no rules in here. *@
+
+<article class="device-card @CssClass">
+    <h3 class="device-card__name">@Result.Device.Name</h3>
+
+    @* The verdict is written in words as well as shown by colour,
+       so it still makes sense to someone who can't tell the colours apart. *@
+    <p class="device-card__verdict">@VerdictLabel</p>
+
+    <p class="device-card__detail">@Detail</p>
+
+    @if (Result.Verdict != Verdict.Broken)
+    {
+        @* A simple bar showing how much of the budget is used. It is decoration:
+           the same information is in the text, so screen readers skip it. *@
+        <div class="device-card__bar" aria-hidden="true">
+            <div class="device-card__bar-fill" style="width: @(BarPercent)%"></div>
+        </div>
+    }
+
+    <p class="device-card__budget">Budget: @Format.Number(Result.Device.TriangleBudget) triangles</p>
+</article>
+
+@code {
+    // [Parameter] marks a value passed in by the parent, like a React prop.
+    // EditorRequired makes the editor warn if the parent forgets it.
+    [Parameter, EditorRequired]
+    public DeviceVerdict Result { get; set; } = default!;
+
+    // How many triangles the model has, for the "x of y used" text.
+    [Parameter]
+    public int TriangleCount { get; set; }
+
+    // The CSS class that sets the colour: green, orange or red.
+    private string CssClass => Result.Verdict switch
+    {
+        Verdict.Ready => "device-card--ready",
+        Verdict.TooHeavy => "device-card--too-heavy",
+        _ => "device-card--broken"
+    };
+
+    private string VerdictLabel => Result.Verdict switch
+    {
+        Verdict.Ready => "Ready",
+        Verdict.TooHeavy => "Too heavy",
+        _ => "Broken"
+    };
+
+    private string Detail => Result.Verdict switch
+    {
+        Verdict.Ready =>
+            $"Uses {Format.Number(TriangleCount)} of {Format.Number(Result.Device.TriangleBudget)} triangles.",
+        Verdict.TooHeavy =>
+            $"{Format.Number(TriangleCount - Result.Device.TriangleBudget)} triangles over the budget.",
+        _ =>
+            "The file has problems, so it can't be trusted to load."
+    };
+
+    // Whole-number percentage of the budget used, capped at 100 so the bar never overflows.
+    private int BarPercent => (int)Math.Min(100, TriangleCount * 100L / Result.Device.TriangleBudget);
+}
