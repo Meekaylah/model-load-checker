@@ -481,3 +481,5 @@ $RECYCLE.BIN/
 *.swp
 
 CLAUDE.md
+# Output of the ModelChecker.Report tool
+test-report.txt
