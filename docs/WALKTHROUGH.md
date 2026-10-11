@@ -255,7 +255,7 @@ The page shown for an unknown URL. Left from the template.
 ### `ModelChecker.Web/wwwroot/samples/`
 The four sample models. Anything in `wwwroot` is served as a plain static file, so the page can fetch `samples/light-chair.obj` like any URL. The `.mtl` files are material files that came with the models; the app does not read them.
 
-### `ModelChecker.Web/wwwroot/css/app.css`, `wwwroot/lib/bootstrap/`, `favicon.png`, `icon-192.png`
+### `ModelChecker.Web/wwwroot/css/app.css`, `wwwroot/lib/bootstrap/`, `favicon.ico`, `icon-192.png`
 Global styles from the template, the Bootstrap CSS library (used for the buttons, the file input and the error box) and the icons.
 
 ### `ModelChecker.Web/Properties/launchSettings.json`

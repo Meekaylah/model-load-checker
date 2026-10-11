@@ -483,3 +483,4 @@ $RECYCLE.BIN/
 CLAUDE.md
 # Output of the ModelChecker.Report tool
 test-report.txt
+out/
